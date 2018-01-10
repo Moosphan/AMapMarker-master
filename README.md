@@ -1,0 +1,2 @@
+# AMapMarker-master
+提供一种高德地图自定义marker的解决方案以及改善高德官方点聚合功能
