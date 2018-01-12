@@ -6,9 +6,17 @@
 
 ## 说明
 
->关于聚合：<https://www.jianshu.com/p/f1642bc608c0>
+- 关于聚合：<https://www.jianshu.com/p/f1642bc608c0>
 
->关于自定义Marker：<https://www.jianshu.com/p/557ff3897b2f>
+>官方并没有处理多种聚合点的点击事件的处理，这里我对聚合点的点击事件和视角移动监听事件进行了统一的管理和执行，并增加类型判断，让它们不会产生点击冲突，具体讲解请看上面文章。
+
+- 关于自定义Marker：<https://www.jianshu.com/p/557ff3897b2f>
+
+>Marker展示的样式主要通过BitmapDescriptor来决定，而官方提供了很多方法来获取BitmapDescriptor，大家可以根据实际需要来选用。一般如果自定义选用`BitmapDescriptorFactory.fromBitmap()`方法来获取marker视图，只需要将view转为bitmap即可。同时，根据大家的反馈，自定义的marker加载网络图片有很多问题，这里本人对网络加载图片进行了处理，保证图片正常显示，具体可以参考以上文章。
+
+- 补充
+
+>大家如果有什么想法和建议欢迎在issue区提出来，本项目会后续加入更多地图相关功能，如果觉得本项目对你有帮助，欢迎star～
 
 ## QQ交流群：
 
