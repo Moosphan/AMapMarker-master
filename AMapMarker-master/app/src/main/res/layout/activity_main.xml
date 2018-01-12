@@ -9,7 +9,7 @@
         android:id="@+id/title_bar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="#121212"
+        android:background="@android:color/black"
         android:orientation="horizontal">
         <TextView
             android:layout_width="match_parent"
@@ -26,5 +26,21 @@
         android:layout_below="@+id/title_bar">
 
     </com.amap.api.maps.MapView>
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/title_bar"
+        android:orientation="vertical">
+        <Button
+            android:id="@+id/add_cluster"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="添加Marker聚合点" />
+        <Button
+            android:id="@+id/add_custom_marker"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="添加自定义Marker" />
+    </LinearLayout>
 
 </RelativeLayout>
