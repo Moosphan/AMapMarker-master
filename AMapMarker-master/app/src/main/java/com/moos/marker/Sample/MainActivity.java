@@ -33,6 +33,9 @@ import com.moos.marker.Cluster.ClusterItemImp;
 import com.moos.marker.Cluster.ClusterOverlay;
 import com.moos.marker.Cluster.ClusterRender;
 import com.moos.marker.Cluster.MarkerSign;
+import com.moos.marker.ClusterAnother.ClusterAnotherClickListener;
+import com.moos.marker.ClusterAnother.ClusterAnotherRender;
+import com.moos.marker.ClusterAnother.ClusterOverlayMerchant;
 import com.moos.marker.R;
 import com.moos.marker.Utils.ViewUtil;
 
@@ -43,17 +46,26 @@ import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+/**
+ * @author moos
+ * @date 2018/01/13
+ * @function display ui
+ */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private MapView mapView = null;
-    private Button bt_add_cluster, bt_add_custom_marker;
+    private Button bt_add_cluster_user, bt_add_cluster_merchant, bt_add_custom_marker;
     private AMap aMap;
-    private ClusterOverlay clusterOverlay;
+    private ClusterOverlay clusterOverlayUser;
+    private ClusterOverlayMerchant clusterOverlayMerchant;
     private List<ClusterItem> clusterItems = new ArrayList<>();
+    private List<ClusterItem> clusterItemsMerchant = new ArrayList<>();
     private Map<Integer, Drawable> mBackDrawAbles = new HashMap<Integer, Drawable>();
+    private Map<Integer, Drawable> mBackDrawAblesMerchant = new HashMap<Integer, Drawable>();
     private final LatLng centerLocation = new LatLng(31.206078,121.602948);
     private final String TYPE_MERCHANT = "02";
     private final String TYPE_USER = "01";
     private final String TAG = "Moos";
+    private int clusterRadius = 48;
 
     BitmapDescriptor bitmapDescriptor ;
 
@@ -73,9 +85,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
 
     private void initView() {
-        bt_add_cluster = (Button) findViewById(R.id.add_cluster);
+        bt_add_cluster_user = (Button) findViewById(R.id.add_cluster_user);
+        bt_add_cluster_merchant = (Button) findViewById(R.id.add_cluster_merchant);
         bt_add_custom_marker = (Button) findViewById(R.id.add_custom_marker);
-        bt_add_cluster.setOnClickListener(this);
+        bt_add_cluster_user.setOnClickListener(this);
+        bt_add_cluster_merchant.setOnClickListener(this);
         bt_add_custom_marker.setOnClickListener(this);
     }
 
@@ -92,7 +106,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onCameraChangeFinish(CameraPosition cameraPosition) {
 
-                clusterOverlay.updateClusters();
+                clusterOverlayUser.updateClusters();
+                clusterOverlayMerchant.updateClusters();
             }
         });
 
@@ -103,8 +118,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e(TAG,">>>>>>>>Marker点击事件响应了");
                 if(marker.getObject().getClass().equals(Cluster.class)){
                     //是聚合点
-                    Log.e(TAG,">>>>>>>点击了聚合点");
-                    clusterOverlay.responseClusterClickEvent(marker);
+                    Cluster cluster = (Cluster) marker.getObject();
+                    String type = cluster.getClusterItems().get(0).getClusterType();
+                    Log.e(TAG,">>>>>>>点击了聚合点类型为"+type);
+                    if(type.equals(TYPE_USER)){
+                        //user cluster
+
+                        //Toast.makeText(MainActivity.this,"click user",Toast.LENGTH_SHORT).show();
+                        clusterOverlayUser.responseClusterClickEvent(marker);
+                        return true;
+                    }else if(type.equals(TYPE_MERCHANT)){
+                        //merchant cluster
+
+                        //Toast.makeText(MainActivity.this,"click merchant",Toast.LENGTH_SHORT).show();
+                        clusterOverlayMerchant.responseClusterClickEvent(marker);
+                        return true;
+                    }
+
+
 
                 }else if(marker.getObject().getClass().equals(MarkerSign.class)){
                     //是自定义marker
@@ -150,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         CameraUpdate cameraUpdate = CameraUpdateFactory.newCameraPosition(
                 new CameraPosition(
                         latLng,//新的中心点坐标
-                        17,    //新的缩放级别
+                        16,    //新的缩放级别
                         0,     //俯仰角0°~45°（垂直与地图时为0）
                         0      //偏航角 0~360° (正北方为0)
                 ));
@@ -191,74 +222,149 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     /**
      * by moos on 2018/01/12
-     * func:添加cluster
+     * func:添加个人聚合点
      * @param locations
-     * @param type 聚合点的类型
      */
-    private void addClustersToMap(final List<LatLng> locations, final String type){
-        new Thread(new Runnable() {
+    private void addUserClustersToMap(final List<LatLng> locations){
+
+        for(int i=0;i<locations.size();i++){
+            ClusterItemImp clusterImp = new ClusterItemImp(locations.get(i), TYPE_USER);
+            clusterItems.add(clusterImp);
+        }
+        if(clusterOverlayUser == null){
+            clusterOverlayUser = new ClusterOverlay(aMap,clusterItems,ViewUtil.dp2px(getApplicationContext(), clusterRadius),getApplicationContext());
+        }else {
+            clusterOverlayUser.onDestroy();
+            clusterOverlayUser = null;
+            clusterOverlayUser = new ClusterOverlay(aMap,clusterItems,ViewUtil.dp2px(getApplicationContext(), clusterRadius),getApplicationContext());
+        }
+
+        clusterOverlayUser.setClusterRenderer(new ClusterRender() {
             @Override
-            public void run() {
-                for(int i=0;i<locations.size();i++){
-                    ClusterItemImp clusterImp = new ClusterItemImp(locations.get(i), type);
-                    clusterItems.add(clusterImp);
-                }
-                if(clusterOverlay == null){
-                    clusterOverlay = new ClusterOverlay(aMap,clusterItems,45,getApplicationContext());
-                }else {
-                    clusterOverlay.onDestroy();
-                    clusterOverlay = null;
-                    clusterOverlay = new ClusterOverlay(aMap,clusterItems,45,getApplicationContext());
-                }
-
-                clusterOverlay.setClusterRenderer(new ClusterRender() {
-                    @Override
-                    public Drawable getDrawAble(int clusterNum) {
-                        if (clusterNum <= 5) {
-                            Drawable bitmapDrawable = mBackDrawAbles.get(2);
-                            if (bitmapDrawable == null) {
-                                bitmapDrawable =
-                                        getApplication().getResources().getDrawable(
-                                                R.mipmap.marker_bg);
-                                mBackDrawAbles.put(2, bitmapDrawable);
-                            }
-                            return bitmapDrawable;
-                        } else {
-                            Drawable bitmapDrawable = mBackDrawAbles.get(3);
-                            if (bitmapDrawable == null) {
-                                bitmapDrawable =
-                                        getApplication().getResources().getDrawable(
-                                                R.mipmap.markers_bg);
-                                mBackDrawAbles.put(3, bitmapDrawable);
-                            }
-                            return bitmapDrawable;
-                        }
+            public Drawable getDrawAble(int clusterNum) {
+                if (clusterNum <= 5) {
+                    Drawable bitmapDrawable = mBackDrawAbles.get(2);
+                    if (bitmapDrawable == null) {
+                        bitmapDrawable =
+                                getApplication().getResources().getDrawable(
+                                        R.mipmap.marker_bg);
+                        mBackDrawAbles.put(2, bitmapDrawable);
                     }
-                });
-                clusterOverlay.setOnClusterClickListener(new ClusterClickListener() {
-                    @Override
-                    public void onClick(Marker marker, List<ClusterItem> clusterItems) {
-
-                        LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                        for (ClusterItem clusterItem : clusterItems) {
-                            builder.include(clusterItem.getPosition());
-                        }
-                        LatLngBounds latLngBounds = builder.build();
-                        aMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,8 )
-                        );
+                    return bitmapDrawable;
+                } else {
+                    Drawable bitmapDrawable = mBackDrawAbles.get(3);
+                    if (bitmapDrawable == null) {
+                        bitmapDrawable =
+                                getApplication().getResources().getDrawable(
+                                        R.mipmap.markers_bg);
+                        mBackDrawAbles.put(3, bitmapDrawable);
                     }
-                });
+                    return bitmapDrawable;
+                }
             }
-        }).start();
+        });
+        clusterOverlayUser.setOnClusterClickListener(new ClusterClickListener() {
+            @Override
+            public void onClick(Marker marker, List<ClusterItem> clusterItems) {
+                Toast.makeText(MainActivity.this,">>>>>>>点击了用户聚合点",Toast.LENGTH_SHORT).show();
+
+                if(aMap.getCameraPosition().zoom<=18){
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    for (ClusterItem clusterItem : clusterItems) {
+                        builder.include(clusterItem.getPosition());
+                    }
+                    LatLngBounds latLngBounds = builder.build();
+                    aMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,10 ));
+                }
+
+            }
+        });
+
+    }
+
+    /**
+     * by moos on 2018/01/12
+     * func:添加商家聚合点
+     * @param locations
+     */
+    private void addMerchantClustersToMap(final List<LatLng> locations){
+
+        for(int i=0;i<locations.size();i++){
+            ClusterItemImp clusterImp = new ClusterItemImp(locations.get(i), TYPE_MERCHANT);
+            clusterItemsMerchant.add(clusterImp);
+        }
+        if(clusterOverlayMerchant == null){
+            clusterOverlayMerchant = new ClusterOverlayMerchant(aMap,clusterItemsMerchant,ViewUtil.dp2px(getApplicationContext(), clusterRadius),getApplicationContext());
+        }else {
+            clusterOverlayMerchant.onDestroy();
+            clusterOverlayMerchant = null;
+            clusterOverlayMerchant = new ClusterOverlayMerchant(aMap,clusterItemsMerchant,ViewUtil.dp2px(getApplicationContext(), clusterRadius),getApplicationContext());
+        }
+
+        clusterOverlayMerchant.setClusterAnotherRenderer(new ClusterAnotherRender() {
+            @Override
+            public Drawable getAnotherDrawAble(int clusterNum) {
+                if (clusterNum <= 5) {
+                    Drawable bitmapDrawable = mBackDrawAblesMerchant.get(2);
+                    if (bitmapDrawable == null) {
+                        bitmapDrawable =
+                                getApplication().getResources().getDrawable(
+                                        R.mipmap.marker_merchant_bg);
+                        mBackDrawAblesMerchant.put(2, bitmapDrawable);
+                    }
+                    return bitmapDrawable;
+                } else {
+                    Drawable bitmapDrawable = mBackDrawAblesMerchant.get(3);
+                    if (bitmapDrawable == null) {
+                        bitmapDrawable =
+                                getApplication().getResources().getDrawable(
+                                        R.mipmap.markers_merchant_bg);
+                        mBackDrawAblesMerchant.put(3, bitmapDrawable);
+                    }
+                    return bitmapDrawable;
+                }
+            }
+        });
+        clusterOverlayMerchant.setOnClusterAnotherClickListener(new ClusterAnotherClickListener() {
+            @Override
+            public void onAnotherClick(Marker marker, List<ClusterItem> clusterItems) {
+                Toast.makeText(MainActivity.this,">>>>>>>点击了商家聚合点",Toast.LENGTH_SHORT).show();
+                if(aMap.getCameraPosition().zoom<=18){
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    for (ClusterItem clusterItem : clusterItems) {
+                        builder.include(clusterItem.getPosition());
+                    }
+                    LatLngBounds latLngBounds = builder.build();
+                    aMap.animateCamera(CameraUpdateFactory.newLatLngBounds(latLngBounds,10 ));
+                }
+
+            }
+        });
 
     }
 
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.add_cluster:
+            case R.id.add_cluster_user:
+                //添加个人聚合点
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        addUserClustersToMap(addSimulatedData(centerLocation, 60, 0.03));
+                    }
+                }).start();
+
+                break;
+            case R.id.add_cluster_merchant:
                 //添加聚合点
-                addClustersToMap(addSimulatedData(centerLocation, 60, 0.03), TYPE_USER);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        addMerchantClustersToMap(addSimulatedData(centerLocation, 30, 0.022));
+                    }
+                }).start();
+
                 break;
 
             case R.id.add_custom_marker:

@@ -21,35 +21,35 @@ public class Cluster {
     private Marker mMarker;
 
 
-    Cluster( LatLng latLng) {
+    public Cluster(LatLng latLng) {
 
         mLatLng = latLng;
         mClusterItems = new ArrayList<ClusterItem>();
     }
 
-    void addClusterItem(ClusterItem clusterItem) {
+    public void addClusterItem(ClusterItem clusterItem) {
         mClusterItems.add(clusterItem);
     }
 
-    int getClusterCount() {
+    public int getClusterCount() {
         return mClusterItems.size();
     }
 
 
 
-    LatLng getCenterLatLng() {
+    public LatLng getCenterLatLng() {
         return mLatLng;
     }
 
-    void setMarker(Marker marker) {
+    public void setMarker(Marker marker) {
         mMarker = marker;
     }
 
-    Marker getMarker() {
+    public Marker getMarker() {
         return mMarker;
     }
 
-    List<ClusterItem> getClusterItems() {
+    public List<ClusterItem> getClusterItems() {
         return mClusterItems;
     }
 }

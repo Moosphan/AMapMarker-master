@@ -32,10 +32,15 @@
         android:layout_below="@+id/title_bar"
         android:orientation="vertical">
         <Button
-            android:id="@+id/add_cluster"
+            android:id="@+id/add_cluster_user"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="添加Marker聚合点" />
+            android:text="添加个人Marker聚合点" />
+        <Button
+            android:id="@+id/add_cluster_merchant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="添加商家Marker聚合点" />
         <Button
             android:id="@+id/add_custom_marker"
             android:layout_width="wrap_content"

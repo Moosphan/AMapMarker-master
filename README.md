@@ -2,7 +2,8 @@
 ## 概述
 
 >提供一种高德地图自定义marker的解决方案以及改善高德官方点聚合功能。
-![](https://github.com/Moosphan/AMapMarker-master/blob/master/AMapMarker-master/effect_picture/amap_marker.gif)
+
+>![](https://github.com/Moosphan/AMapMarker-master/blob/master/AMapMarker-master/effect_picture/amap_marker.gif)
 
 ## 说明
 
